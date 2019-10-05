@@ -3,28 +3,38 @@ import path from 'path';
 
 type PathItemType = 'add' | 'create';
 
-export interface IProcessPathItem {
+interface IProcessPathItem {
   pathKey: string;
   type: PathItemType;
   value: string;
   templateVariableKeys: string[];
 }
 
-export interface IPathsMap {
+interface IPathsMap {
   [key: string]: string;
 }
 
-export interface IPathsKeyMap {
+interface IPathsKeyMap {
   [key: string]: boolean;
 }
 
-export interface ITemplateVariables {
+interface ITemplateVariables {
   [key: string]: number | string;
 }
 
-export interface IPathLockerPaths {
+interface IPathLockerPaths {
   [key: string]: string;
 }
+
+const resolvePath = (pathString: string, allOthers: string[]): string => {
+  // if they pass in multiple strings, assume they want us to resolve it
+  // this pattern allows them not to have to use the path module if they don't want to
+  if (allOthers.length) {
+    return path.resolve(pathString, ...allOthers);
+  }
+  // otherwise it's already a resolved path so just return it
+  return pathString;
+};
 
 const TEMPLATE_VARIABLE_REGEX = /\$\{([^}]+)\}/g;
 const getTemplateVariablesFromString = (stringToScan: string): string[] => {
@@ -48,42 +58,35 @@ const pathItemHasRequiredTemplateVariables = (pathItem: IProcessPathItem, templa
 
 // nice function that does template variable replacement
 const fillTemplate = (templateString: string, templateVars: ITemplateVariables): string => {
-  return new Function('return `'+templateString +'`;').call(templateVars);
+
+  return templateString.replace(TEMPLATE_VARIABLE_REGEX, (substring: string, ...matchList: any[]): string => {
+    return templateVars[matchList[0]] + '';
+  });
 };
 
-const validatePathExists = (pathString: string) => {
+const validatePathExists = (pathString: string, pathKey: string) => {
   if (!fs.existsSync(pathString)) {
-    throw new Error(`node-path-locker.pathDoesNotExistError: ${pathString}`);
+    throw new Error(`node-path-locker.pathDoesNotExistError: pathKey: ${pathKey} path: ${pathString}`);
   }
 };
 
-const ensurePathExists = (pathString: string) => {
+const ensurePathExists = (pathString: string, pathKey: string) => {
   try {
     fs.ensureDirSync(pathString);
   } catch (err) {
-    throw new Error(`node-path-locker.pathCouldNotBeCreated: ${pathString}`);
+    throw new Error(`node-path-locker.pathCouldNotBeCreated: pathKey: ${pathKey} path: ${pathString}`);
   }
 };
 
-export default class PathLocker {
+class PathLocker {
 
   private addAndCreateList: IProcessPathItem[] = [];
 
   public pathKeyMap: IPathsKeyMap = {};
 
-  private resolvePath = (pathString: string, allOthers: string[]): string => {
-    // if they pass in multiple strings, assume they want us to resolve it
-    // this pattern allows them not to have to use the path module if they don't want to
-    if (allOthers !== undefined) {
-      return path.resolve(pathString, ...allOthers);
-    }
-    // otherwise it's already a resolved path so just return it
-    return pathString;
-  };
-
   private processPath = (pathItemType: PathItemType, pathKey: string, pathString: string, allOthers: string[]) => {
 
-    const rawPath = this.resolvePath(pathString, allOthers);
+    const rawPath = resolvePath(pathString, allOthers);
 
     this.pathKeyMap[pathKey] = true;
 
@@ -104,6 +107,8 @@ export default class PathLocker {
   };
 
   public get = (templateVariables: ITemplateVariables): IPathLockerPaths => {
+
+    templateVariables = templateVariables || {};
 
     // TODO fail if any template variables match the pathKeyMap
     Object.keys(templateVariables).forEach((templateVariableKey) => {
@@ -126,13 +131,18 @@ export default class PathLocker {
         const finalPath = fillTemplate(pathItem.value, Object.assign({}, templateVariables, validatedPaths));
 
         if (pathItem.type === 'add') {
-          validatePathExists(finalPath);
+          validatePathExists(finalPath, pathItem.pathKey);
         } else if (pathItem.type === 'create') {
-          ensurePathExists(finalPath);
+          ensurePathExists(finalPath, pathItem.pathKey);
         }
+
+        // everything is looking good so add it to the validated paths
+        validatedPaths[pathItem.pathKey] = finalPath;
       }
     });
 
     return validatedPaths;
   };
 }
+
+export = PathLocker;
