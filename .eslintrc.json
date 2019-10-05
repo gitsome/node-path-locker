@@ -1,0 +1,38 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "extends": [
+    "plugin:import/typescript",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "eslint:recommended",
+    "plugin:node/recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings"
+  ],
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "node/no-unsupported-features/es-syntax": ["error", {"ignores": ["modules"]}],
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/ban-ts-ignore": "off",
+    "@typescript-eslint/interface-name-prefix": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "import/named": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "no-var": "error",
+    "indent": ["error", 2],
+    "arrow-parens": [2, "always"],
+    "quotes": ["error", "single", { "allowTemplateLiterals": true }],
+    "comma-spacing": ["error", { "before": false, "after": true }]
+  },
+  "settings": {
+    "import/parsers": { "@typescript-eslint/parser": [".ts"] },
+    "node": {
+      "tryExtensions": [".js", ".ts"]
+    }
+  }
+}

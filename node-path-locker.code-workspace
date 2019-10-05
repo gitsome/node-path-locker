@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+
+		"editor.tabSize": 2,
+		"editor.insertSpaces": true,
+		"editor.detectIndentation": false,
+
+		"eslint.workingDirectories": [
+			"./src"
+		],
+		"eslint.validate": [
+			"javascript",
+			"typescript",
+		]
+	},
+	"extensions": {
+		"recommendations": [
+			"dbaeumer.vscode-eslint",
+			"eg2.vscode-npm-script",
+			"ms-vscode.vscode-typescript-tslint-plugin"
+		]
+	}
+}
