@@ -25,7 +25,7 @@ yarn install node-path-locker
 3. Import the `node-path-locker` module
 4. Create a new `PathLocker` instance
 5. Add all the paths you need
-6. export the `get` method on your `PathLocker` instance
+6. Export the `get` method on your `PathLocker` instance
 
 ```javascript
 // getPaths.js
@@ -118,9 +118,10 @@ const PathLocker = require('node-path-locker');
 const pathLocker = new PathLocker();
 
 // register the BUILD_ROOT, this is where dynamic artifacts will be created
+// NOTE: this path should already exist in the source code
 pathLocker.add('BUILD_ROOT', __dirname, 'package-one');
 
-// register a path to create. This path will not be created if 'BUILD_ROOT' doesn't exists
+// register a path to create. This path will not be created if 'BUILD_ROOT' doesn't exist
 pathLocker.create('BUILD_ARTIFACTS', '${BUILD_ROOT}', 'build');
 
 module.exports = pathLocker.get;
