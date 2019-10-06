@@ -45,6 +45,7 @@ pathLocker.add('ENV_VARS_FILE', path.resolve(__dirname, '../../.env.${environmen
 
 /*====== BUILD PATHS ======*/
 
+// at the point another module calls the get method, these path swill be created recursively
 pathLocker.create('BUILD_DIRECTORY_ONE', '${BUILD_DIRECTORY_ROOT}', 'build/lambdas', '${environment}');
 pathLocker.create('BUILD_DIRECTORY_TWO', path.join('${BUILD_DIRECTORY_ROOT}', 'build/css'));
 
@@ -75,7 +76,7 @@ buildProject(envVars, BUILD_DIRECTORY_ONE);
 
 ### Order Matters
 
-PathLocker runs through the paths for validation and creation as you register them. You can interchange `add` and `create` paths, but if they depend on each other, then dependent paths must go first.
+PathLocker runs through the paths for validation and creation in the order you register them. You can interchange `add` and `create` paths, but if they depend on each other, then dependent paths must go first.
 
 ### With or Without the `path` Module
 
