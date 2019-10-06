@@ -1,8 +1,8 @@
 # 🗄️ node-path-locker 🗄️
-Utility for centralizing paths in a NodeJS project.
+Utility for managing **source** and **build** paths in a NodeJS project.
 
 Good use cases:
-- Your build processes requires dependable and flexible build path management
+- Your build processes require dependable and flexible build path management
 - Your build processes need to access or create environment dependent paths
 - Your team is constantly refactoring where things are
 - You like a single module that describes your SOURCE and BUILD paths
