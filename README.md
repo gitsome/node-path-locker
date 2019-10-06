@@ -76,13 +76,11 @@ const envVars = JSON.parse(fs.readFileSync(ENV_VARS_FILE, 'utf8'));
 buildProject(envVars, BUILD_DIRECTORY_ONE);
 ```
 
-## Additional Details
-
-### Order Matters
+## Order Matters
 
 PathLocker runs through the paths for validation and creation in the order you register them. You can interchange `add` and `create` paths, but if they depend on each other, then dependent paths must go first.
 
-### With or Without the `path` Module
+## With or Without the `path` Module
 
 PathLocker ultimately generates absolute paths so that no matter where you use them, the paths work without tweaks. PathLocker uses `path.resolve` under the hood to ensure all paths are absolute, but there is flexibility in how you deliver the path to the library.
 
@@ -101,7 +99,7 @@ This example shows that you can avoid using the `path` library all together if y
 If you pass in a single path parameter as in EXAMPLE_TWO, PathLocker will use that as the absolute url.
 
 
-### Automatic Path Validation & Creation
+## Automatic Path Validation & Creation
 
 Every time you use the `PathLocker` `get` method, it will validate all paths. This means that when you move things around in your project, you'll know if a build related path is busted.
 
@@ -128,3 +126,22 @@ module.exports = pathLocker.get;
 ```
 
 The `BUILD_ARTIFACTS` path will not be created and an error will be thrown if the `BUILD_ROOT` path does not exist.
+
+## Variable Dependent Paths
+
+In previous examples you have seen paths that depend on template variables like this one:
+
+```javascript
+pathLocker.add('ENV_VARS_FILE', path.resolve(__dirname, '../../.env.${environment}'));
+```
+
+This path depends on a dynamic template variable `${environment}`. This path will not be generated if it is not supplied to the `pathLocker.get` method.
+
+```javascript
+// get called with no variables
+const { ENV_VARS_FILE } = pathLocker.get();
+```
+
+In the example above, `ENV_VARS_FILE` will be `undefined` because not all of it's dependent template variables were provided.
+
+This is great, because you can still access all paths that do not have dependencies on variables you don't have access to.
