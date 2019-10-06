@@ -26,6 +26,8 @@ interface IPathLockerPaths {
   [key: string]: string;
 }
 
+const TEMPLATE_VARIABLE_REGEX = /\$\{([^}]+)\}/g;
+
 const resolvePath = (pathString: string, allOthers: string[]): string => {
   // if they pass in multiple strings, assume they want us to resolve it
   // this pattern allows them not to have to use the path module if they don't want to
@@ -36,7 +38,6 @@ const resolvePath = (pathString: string, allOthers: string[]): string => {
   return pathString;
 };
 
-const TEMPLATE_VARIABLE_REGEX = /\$\{([^}]+)\}/g;
 const getTemplateVariablesFromString = (stringToScan: string): string[] => {
   const output = [];
   let matches: any[] | null = [];
@@ -56,9 +57,8 @@ const pathItemHasRequiredTemplateVariables = (pathItem: IProcessPathItem, templa
   }, true);
 };
 
-// nice function that does template variable replacement
+// templateVariable replacement
 const fillTemplate = (templateString: string, templateVars: ITemplateVariables): string => {
-
   return templateString.replace(TEMPLATE_VARIABLE_REGEX, (substring: string, ...matchList: any[]): string => {
     return templateVars[matchList[0]] + '';
   });
