@@ -45,7 +45,7 @@ pathLocker.add('ENV_VARS_FILE', path.resolve(__dirname, '../../.env.${environmen
 
 /*====== BUILD PATHS ======*/
 
-// at the point another module calls the get method, these path swill be created recursively
+// when another module calls the pathLocker.get method, these paths will be created recursively
 pathLocker.create('BUILD_DIRECTORY_ONE', '${BUILD_DIRECTORY_ROOT}', 'build/lambdas', '${environment}');
 pathLocker.create('BUILD_DIRECTORY_TWO', path.join('${BUILD_DIRECTORY_ROOT}', 'build/css'));
 
