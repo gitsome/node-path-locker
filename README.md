@@ -1,5 +1,9 @@
 # 🗄️ node-path-locker 🗄️
-Utility for centralizing paths in a NodeJS project. It's best use case is managing paths for complex build processes that require dependable build path management. If your build processes are looking for or need to create paths based on environment variables, then this library is a must.
+Utility for centralizing paths in a NodeJS project.
+
+It's best use case is managing paths for complex build processes that require dependable build path management.
+
+If your build processes are looking for or need to create paths based on environment variables, then this library is a must.
 
 It has the following benefits:
 
