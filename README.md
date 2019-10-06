@@ -115,7 +115,7 @@ const pathLocker = new PathLocker();
 // register the BUILD_ROOT, this is where dynamic artifacts will be created
 pathLocker.add('BUILD_ROOT', __dirname, 'package-one');
 
-// register a path to create. This path will not be provided if 'BUILD_ROOT' doesn't exists
+// register a path to create. This path will not be created if 'BUILD_ROOT' doesn't exists
 pathLocker.create('BUILD_ARTIFACTS', '${BUILD_ROOT}', 'build');
 
 module.exports = pathLocker.get;
