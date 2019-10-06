@@ -110,7 +110,7 @@ class PathLocker {
 
     templateVariables = templateVariables || {};
 
-    // TODO fail if any template variables match the pathKeyMap
+    // fail if any template variables match the pathKeyMap
     Object.keys(templateVariables).forEach((templateVariableKey) => {
       if (this.pathKeyMap[templateVariableKey]) {
         throw new Error(`node-path-locker.invalidTemplateVariableProvided: ${templateVariableKey} It collides with a registered path key.`);
@@ -124,7 +124,6 @@ class PathLocker {
 
       // NOTE: this step will ensure that any 'create' paths will fail if a dependent path item has already failed because it won't exist in validatedPaths
       // This helps keep the user's file system clean by not creating paths if a dependent path fails.
-      // TODO: So the documentation should encourage the use of dependent base paths for paths that will be created.
       if (pathItemHasRequiredTemplateVariables(pathItem, templateVariables, validatedPaths)) {
 
         // fill in any template variable replacements with the provided variables and current list of validated paths
