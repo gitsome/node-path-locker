@@ -16,7 +16,12 @@
 		"eslint.validate": [
 			"javascript",
 			"typescript",
-		]
+    ],
+    "editor.wordWrapColumn": 500,
+    "[markdown]":{
+      "editor.wordWrap": "wordWrapColumn",
+      "editor.wordWrapColumn": 500
+    }
 	},
 	"extensions": {
 		"recommendations": [
