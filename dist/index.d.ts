@@ -11,8 +11,8 @@ declare class PathLocker {
     private addAndCreateList;
     pathKeyMap: IPathsKeyMap;
     private processPath;
-    add: (pathKey: string, pathString: string, ...allOthers: string[]) => void;
-    create: (pathKey: string, pathString: string, ...allOthers: string[]) => void;
+    add: (pathKey: string, ...allPathParts: string[]) => void;
+    create: (pathKey: string, ...allPathParts: string[]) => void;
     get: (templateVariables: ITemplateVariables) => IPathLockerPaths;
 }
 export = PathLocker;

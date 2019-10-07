@@ -6,7 +6,7 @@ type PathItemType = 'add' | 'create';
 interface IProcessPathItem {
   pathKey: string;
   type: PathItemType;
-  value: string;
+  pathParts: string[];
   templateVariableKeys: string[];
 }
 
@@ -28,25 +28,20 @@ interface IPathLockerPaths {
 
 const TEMPLATE_VARIABLE_REGEX = /\$\{([^}]+)\}/g;
 
-const resolvePath = (pathString: string, allOthers: string[]): string => {
-  // if they pass in multiple strings, assume they want us to resolve it
-  // this pattern allows them not to have to use the path module if they don't want to
-  if (allOthers.length) {
-    return path.resolve(pathString, ...allOthers);
-  }
-  // otherwise it's already a resolved path so just return it
-  return pathString;
-};
+const getTemplateVariablesFromString = (pathPartsToScan: string[]): string[] => {
 
-const getTemplateVariablesFromString = (stringToScan: string): string[] => {
-  const output = [];
-  let matches: any[] | null = [];
-  while (matches) {
-    matches = TEMPLATE_VARIABLE_REGEX.exec(stringToScan);
-    if (matches) {
-      output.push(matches[1].trim());
+  const output: string[] = [];
+
+  pathPartsToScan.forEach((pathPart) => {
+    let matches: any[] | null = [];
+    while (matches) {
+      matches = TEMPLATE_VARIABLE_REGEX.exec(pathPart);
+      if (matches) {
+        output.push(matches[1].trim());
+      }
     }
-  }
+  });
+
   return output;
 };
 
@@ -84,26 +79,24 @@ class PathLocker {
 
   public pathKeyMap: IPathsKeyMap = {};
 
-  private processPath = (pathItemType: PathItemType, pathKey: string, pathString: string, allOthers: string[]) => {
-
-    const rawPath = resolvePath(pathString, allOthers);
+  private processPath = (pathItemType: PathItemType, pathKey: string, allPathParts: string[]) => {
 
     this.pathKeyMap[pathKey] = true;
 
     this.addAndCreateList.push({
       pathKey: pathKey,
       type: pathItemType,
-      value: rawPath,
-      templateVariableKeys: getTemplateVariablesFromString(rawPath)
+      pathParts: allPathParts,
+      templateVariableKeys: getTemplateVariablesFromString(allPathParts)
     });
   };
 
-  public add = (pathKey: string, pathString: string, ...allOthers: string[]) => {
-    this.processPath('add', pathKey, pathString, allOthers);
+  public add = (pathKey: string, ...allPathParts: string[]) => {
+    this.processPath('add', pathKey, allPathParts);
   };
 
-  public create = (pathKey: string, pathString: string, ...allOthers: string[]) => {
-    this.processPath('create', pathKey, pathString, allOthers);
+  public create = (pathKey: string, ...allPathParts: string[]) => {
+    this.processPath('create', pathKey, allPathParts);
   };
 
   public get = (templateVariables: ITemplateVariables): IPathLockerPaths => {
@@ -126,8 +119,13 @@ class PathLocker {
       // This helps keep the user's file system clean by not creating paths if a dependent path fails.
       if (pathItemHasRequiredTemplateVariables(pathItem, templateVariables, validatedPaths)) {
 
+        const filledPathParts = pathItem.pathParts.map((pathPart) => {
+          // pass in provided templateVariables as well as paths already generated and validated
+          return fillTemplate(pathPart, Object.assign({}, templateVariables, validatedPaths));
+        });
+
         // fill in any template variable replacements with the provided variables and current list of validated paths
-        const finalPath = fillTemplate(pathItem.value, Object.assign({}, templateVariables, validatedPaths));
+        const finalPath = path.resolve(...filledPathParts);
 
         if (pathItem.type === 'add') {
           validatePathExists(finalPath, pathItem.pathKey);
