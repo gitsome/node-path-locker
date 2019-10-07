@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 
-type PathItemType = 'add' | 'create';
+type PathItemType = 'exists' | 'willExist' | 'create';
 
 interface IProcessPathItem {
   pathKey: string;
@@ -75,7 +75,7 @@ const ensurePathExists = (pathString: string, pathKey: string) => {
 
 class PathLocker {
 
-  private addAndCreateList: IProcessPathItem[] = [];
+  private registerdPathItems: IProcessPathItem[] = [];
 
   public pathKeyMap: IPathsKeyMap = {};
 
@@ -83,7 +83,7 @@ class PathLocker {
 
     this.pathKeyMap[pathKey] = true;
 
-    this.addAndCreateList.push({
+    this.registerdPathItems.push({
       pathKey: pathKey,
       type: pathItemType,
       pathParts: allPathParts,
@@ -91,8 +91,12 @@ class PathLocker {
     });
   };
 
-  public add = (pathKey: string, ...allPathParts: string[]) => {
-    this.processPath('add', pathKey, allPathParts);
+  public exists = (pathKey: string, ...allPathParts: string[]) => {
+    this.processPath('exists', pathKey, allPathParts);
+  };
+
+  public willExist = (pathKey: string, ...allPathParts: string[]) => {
+    this.processPath('willExist', pathKey, allPathParts);
   };
 
   public create = (pathKey: string, ...allPathParts: string[]) => {
@@ -113,7 +117,7 @@ class PathLocker {
     const validatedPaths: IPathLockerPaths = {};
 
     // now run through all the paths
-    this.addAndCreateList.forEach((pathItem) => {
+    this.registerdPathItems.forEach((pathItem) => {
 
       // NOTE: this step will ensure that any 'create' paths will fail if a dependent path item has already failed because it won't exist in validatedPaths
       // This helps keep the user's file system clean by not creating paths if a dependent path fails.
@@ -127,7 +131,8 @@ class PathLocker {
         // fill in any template variable replacements with the provided variables and current list of validated paths
         const finalPath = path.resolve(...filledPathParts);
 
-        if (pathItem.type === 'add') {
+        // some paths need validation that they already exist or are created immediately
+        if (pathItem.type === 'exists') {
           validatePathExists(finalPath, pathItem.pathKey);
         } else if (pathItem.type === 'create') {
           ensurePathExists(finalPath, pathItem.pathKey);

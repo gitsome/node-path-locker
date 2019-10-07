@@ -1,6 +1,6 @@
 {
   "name": "node-path-locker",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Utility for centralizing paths in a NodeJS project.",
   "main": "dist/index.js",
   "files": [

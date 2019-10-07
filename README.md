@@ -40,15 +40,15 @@ const pathLocker = new PathLocker();
 /*====== PATHS THAT EXIST IN THE SOURCE CODE  ======*/
 
 // the last N parameters are combined using path.resolve
-pathLocker.add('PACKAGE_ONE', __dirname, '../../package-one');
-pathLocker.add('PACKAGE_TWO', __dirname, '../../package-two');
-pathLocker.add('SOURCE_FILES', '${PACKAGE_ONE}', 'src'));
-pathLocker.add('BUILD_DIRECTORY_ROOT', '${PACKAGE_TWO}');
+pathLocker.exists('PACKAGE_ONE', __dirname, '../../package-one');
+pathLocker.exists('PACKAGE_TWO', __dirname, '../../package-two');
+pathLocker.exists('SOURCE_FILES', '${PACKAGE_ONE}', 'src'));
+pathLocker.exists('BUILD_DIRECTORY_ROOT', '${PACKAGE_TWO}');
 
 /*====== SOURCE PATHS THAT DEPEND ON VARIABLES ======*/
 
 // you can also pass in a single absolute url yourself using the path module
-pathLocker.add('ENV_VARS_FILE', path.resolve(__dirname, '../../.env.${environment}'));
+pathLocker.willExist('ENV_VARS_FILE', path.resolve(__dirname, '../../.env.${environment}'));
 
 /*====== BUILD PATHS ======*/
 
@@ -81,7 +81,7 @@ buildProject(envVars, BUILD_DIRECTORY_ONE);
 
 ## Order Matters
 
-PathLocker runs through the paths for validation and creation in the order you register them. You can interchange `add` and `create` paths, but if they depend on each other, then dependent paths must go first.
+PathLocker runs through the paths for validation and creation in the order you register them. You can interchange `exists`, `willExist`, `create` paths, but if they depend on each other, then dependent paths must go first.
 
 ## With or Without the `path` Module
 
@@ -94,8 +94,8 @@ const path = require('path');
 const PathLocker = require('node-path-locker');
 const pathLocker = new PathLocker();
 
-pathLocker.add('EXAMPLE_ONE', __dirname, 'example-one-directory');
-pathLocker.add('EXAMPLE_TWO', path.resolve(__dirname, 'example-two-directory'));
+pathLocker.exists('EXAMPLE_ONE', __dirname, 'example-one-directory');
+pathLocker.exists('EXAMPLE_TWO', path.resolve(__dirname, 'example-two-directory'));
 ```
 This example shows that you can avoid using the `path` library all together if you want. If PathLocker sees you have multiple path parameters, it will use `path.resolve` for you. A small but helpful simplification.
 
@@ -106,9 +106,11 @@ If you pass in a single path parameter as in EXAMPLE_TWO, PathLocker will use th
 
 Every time you use the `PathLocker` `get` method, it will validate all paths. This means that when you move things around in your project, you'll know if a build related path is busted.
 
-Paths registered using the `add` method should already exist in the source so PathLocker will throw an error if any of these paths do not exists.
+- Paths registered using the `exists` method should already exist in the source so PathLocker will throw an error if any of these paths do not exists.
 
-Paths registered using the `create` method will automatically be created recursively... BUT, if the path uses a template variable that references a previously registered path, it will throw an error if that dependent path does not exist.
+- Paths registered using the `willExist` method will require all templateVariables to be resolved, but the file does not have to exist.
+
+- Paths registered using the `create` method will automatically be created recursively... BUT, if the path uses a template variable that references a previously registered path, it will throw an error if that dependent path does not exist.
 
 This means it's best to add the root build path where new build directories are created and reference it as a template variable while constructing the new build directory paths.
 
@@ -120,7 +122,11 @@ const pathLocker = new PathLocker();
 
 // register the BUILD_ROOT, this is where dynamic artifacts will be created
 // NOTE: this path should already exist in the source code
-pathLocker.add('BUILD_ROOT', __dirname, 'package-one');
+pathLocker.exists('BUILD_ROOT', __dirname, 'package-one');
+
+// register an environment variable file that will be created during our build process
+// NOTE: this path is created later, so we use willExist
+pathLocker.willExist('BUILD_ENV_FILE', '${BUILD_ROOT}/.env.{environment}');
 
 // register a path to create. This path will not be created if 'BUILD_ROOT' doesn't exist
 pathLocker.create('BUILD_ARTIFACTS', '${BUILD_ROOT}', 'build');
@@ -135,7 +141,7 @@ The `BUILD_ARTIFACTS` path will not be created and an error will be thrown if th
 In previous examples you have seen paths that depend on template variables like this one:
 
 ```javascript
-pathLocker.add('ENV_VARS_FILE', path.resolve(__dirname, '../../.env.${environment}'));
+pathLocker.exists('ENV_VARS_FILE', path.resolve(__dirname, '../../.env.${environment}'));
 ```
 
 This path depends on a dynamic template variable `${environment}`. This path will not be generated if it is not supplied to the `pathLocker.get` method.

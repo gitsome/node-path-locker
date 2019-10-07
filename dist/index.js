@@ -44,19 +44,22 @@ const ensurePathExists = (pathString, pathKey) => {
 };
 class PathLocker {
     constructor() {
-        this.addAndCreateList = [];
+        this.registerdPathItems = [];
         this.pathKeyMap = {};
         this.processPath = (pathItemType, pathKey, allPathParts) => {
             this.pathKeyMap[pathKey] = true;
-            this.addAndCreateList.push({
+            this.registerdPathItems.push({
                 pathKey: pathKey,
                 type: pathItemType,
                 pathParts: allPathParts,
                 templateVariableKeys: getTemplateVariablesFromString(allPathParts)
             });
         };
-        this.add = (pathKey, ...allPathParts) => {
-            this.processPath('add', pathKey, allPathParts);
+        this.exists = (pathKey, ...allPathParts) => {
+            this.processPath('exists', pathKey, allPathParts);
+        };
+        this.willExist = (pathKey, ...allPathParts) => {
+            this.processPath('willExist', pathKey, allPathParts);
         };
         this.create = (pathKey, ...allPathParts) => {
             this.processPath('create', pathKey, allPathParts);
@@ -71,7 +74,7 @@ class PathLocker {
             });
             const validatedPaths = {};
             // now run through all the paths
-            this.addAndCreateList.forEach((pathItem) => {
+            this.registerdPathItems.forEach((pathItem) => {
                 // NOTE: this step will ensure that any 'create' paths will fail if a dependent path item has already failed because it won't exist in validatedPaths
                 // This helps keep the user's file system clean by not creating paths if a dependent path fails.
                 if (pathItemHasRequiredTemplateVariables(pathItem, templateVariables, validatedPaths)) {
@@ -81,7 +84,8 @@ class PathLocker {
                     });
                     // fill in any template variable replacements with the provided variables and current list of validated paths
                     const finalPath = path_1.default.resolve(...filledPathParts);
-                    if (pathItem.type === 'add') {
+                    // some paths need validation that they already exist or are created immediately
+                    if (pathItem.type === 'exists') {
                         validatePathExists(finalPath, pathItem.pathKey);
                     }
                     else if (pathItem.type === 'create') {
